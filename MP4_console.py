@@ -123,3 +123,4 @@ while choix != 6:
 
 cur.close()
 conn.close()
+print("\nFin du programme")
