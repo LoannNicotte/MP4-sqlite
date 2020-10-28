@@ -1,32 +1,35 @@
 import sqlite3
 from tkinter import * 
+from tkinter.ttk import * 
 
 #---------------------------------------------------------------------------------------------------------------------------  
 
-def menu():
+def choix1():
+    global choix
+    quitter()
+    choix = 1
+
+def choix2():
+    global choix
+    quitter()
+    choix = 2
     
-    print(
-"""
-┌──────────────────────────────────────┐
-│                                      │
-│  1- Ajout à la base de donné         │
-│  2- Supprimer de la base de donné    │
-│  3- Modifier la base de donné        │
-│  4- Recherche dans la base de donné  │
-│  5- Voir la base de donné totale     │
-│  6- Quitter le programme             │  
-│                                      │
-└──────────────────────────────────────┘  
-""")
+def choix3():
+    global choix
+    quitter()
+    choix = 3
 
+def choix4():
+    global choix
+    quitter()
+    choix = 4
+
+def Exit():
+    global choix
+    fenetre.destroy()
+    fenetre.quit()
+    choix = 5
     
-    choix = int(input("Quelle est votre choix ? \n"))
-    while choix > 6 or choix < 1:
-        print("Vous devez donnez soit 1;2;3;4 ou 4")
-        choix = int(input("Quelle est votre choix ? \n"))
-    return choix
-
-
 def quitter():
     fenetre.destroy()
     fenetre.quit()
@@ -38,19 +41,32 @@ def conectBDD():
                     (id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, nom TEXT, prenom TECT, tel INT,
                     email TEXT, qualité TEXT)""")
   
-def ajouterBDD(nom, prenom, tel,email,qualite):
+def ajouterBDD():
     
-    datas = nom , prenom , tel , email , qualite
+    datas = nom.get() , prenom.get() , tel.get() , email.get() , qualité.get()
     
     cur.execute("INSERT INTO ANNUAIRE(nom,prenom,tel,email,qualité) VALUES(?, ?, ?, ?, ?)" , datas)
-    conn.commit()   
-
-def suprBDD(colone, suppr):
-    
-    suppr=(suppr,)
-        
-    cur.execute('DELETE FROM ANNUAIRE WHERE {} = ?'.format(colone), suppr)
     conn.commit()
+    
+    fenetre.destroy()
+    fenetre.quit()
+
+def suprBDD():
+    
+    cur.execute('SELECT * FROM ANNUAIRE')
+    conn.commit()
+    BD = cur.fetchall()        
+    
+    nom = BD[int(supr.get())-1][1]
+    prenom = BD[int(supr.get())-1][2]
+    
+    suppr = (nom,prenom)
+        
+    cur.execute('DELETE FROM ANNUAIRE WHERE nom = ? AND prenom = ?', suppr)
+    conn.commit()
+    
+    fenetre.destroy()
+    fenetre.quit()
 
 def modifBDD(colone, colone_connu, ligne, modif) :
 
@@ -76,23 +92,83 @@ cur.execute("""CREATE TABLE IF NOT EXISTS ANNUAIRE
                 (id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, nom TEXT, prenom TECT, tel INT,
                 email TEXT, qualité TEXT)""")
 
-choix = menu()
-while choix != 6:
+fenetre = Tk()
+
+Button(fenetre, text="AJOUT", command=choix1).pack(pady = 5)
+Button(fenetre, text="SUPRESSION", command=choix2).pack(pady = 5)
+Button(fenetre, text="MODIFICATION", command=choix3).pack(pady = 5)
+Button(fenetre, text="BDD", command=choix4).pack(pady = 5)
+Button(fenetre, text="EXIT", command=Exit).pack(pady = 5)
+
+fenetre.mainloop()
+while choix != 5:
     if choix == 1:
        
-        nom = input("Nom \n")
-        prenom = input("Prenom \n")
-        tel = int(input("Telephone \n"))
-        email = input("Email \n")
-        qualité = input("Qualité \n")
+        fenetre = Tk()
         
-        ajouterBDD(nom, prenom, tel,email,qualité)
+        Button(fenetre, text="EXIT", command=Exit).pack(side = TOP, fill = X, pady = 5)
+
+        Label(fenetre, text= 'Ajout dans la base de donnée').pack(side=TOP, pady=10)
+        
+        Label(fenetre, text = 'Nom (string) :').pack(side=TOP, padx=5, pady=5)
+        nom = Entry(fenetre, width=30)
+        nom.pack(side = TOP,padx=5, pady=5)
+        
+        Label(fenetre, text = 'Prénom (string) :').pack(side=TOP, padx=5, pady=5)
+        prenom = Entry(fenetre, width=30)
+        prenom.pack(side = TOP,padx=5, pady=5)
+                
+        Label(fenetre, text = 'Tel (int) :').pack(side=TOP, padx=5, pady=5)
+        tel = Entry(fenetre, width=30)
+        tel.pack(side = TOP,padx=5, pady=5)
+        
+        Label(fenetre, text = 'Email (string) :').pack(side=TOP, padx=5, pady=5)
+        email = Entry(fenetre, width=30)
+        email.pack(side = TOP,padx=5, pady=5)
+                
+        Label(fenetre, text = 'Qualité (string) :').pack(side=TOP, padx=5, pady=5)
+        qualité = Entry(fenetre, width=30)
+        qualité.pack(side = TOP,padx=5, pady=5)        
+        
+        Button(fenetre, text="Fermer", command=quitter).pack(side = BOTTOM, padx=5, pady=5)
+        Button(fenetre, text='Ajouter', command=ajouterBDD).pack(side = BOTTOM, padx=5, pady=5)       
+        
+        fenetre.mainloop()
+
 
     elif choix == 2:
-        colone = input("Que voulez-vous supprimer ?\n"
-                        "(nom, prenom, tel ,email, qualité)\n")
-        suppr = input("Quelle est la donnée a supprimer ? \n")
-        suprBDD(colone, suppr)        
+        
+        ID = []
+
+        fenetre = Tk()
+        
+        Button(fenetre, text="EXIT", command=Exit).pack(side = TOP, fill = X, pady = 5)
+        
+        tableau = Treeview(fenetre, columns=('ID', 'NOM', 'PRENOM', 'TELEPHONE', 'EMAIL', 'QUALITE'))
+        tableau.heading('ID', text='ID')
+        tableau.heading('NOM', text='NOM')
+        tableau.heading('PRENOM', text='PRENOM')
+        tableau.heading('TELEPHONE', text='TELEPHONE')
+        tableau.heading('EMAIL', text='EMAIL')
+        tableau.heading('QUALITE', text='QUALITE')
+        tableau['show'] = 'headings' 
+        tableau.pack(padx = 5, pady = (0, 5))
+        
+        for i in range(len(BD)):
+            tableau.insert('', 'end', iid=i, values=(i+1, BD[i][1], BD[i][2], BD[i][3], BD[i][4], BD[i][5]))
+            ID.append(i+1)
+        
+        Label(fenetre, text= 'Que suprimer (ID) ?').pack(pady=5)
+
+        supr = Combobox(fenetre, values=ID)
+        supr.current(0)
+        supr.pack()
+        
+        Button(fenetre, text="Suprimer", command=suprBDD).pack()
+        
+        Button(fenetre, text="Fermer", command=quitter).pack()
+               
+        fenetre.mainloop()        
 
     elif choix == 3:
         colone = input("Quelle colone modifier ?\n"
@@ -104,26 +180,16 @@ while choix != 6:
         modifBDD(colone, colone_connu, ligne, modif)        
 
     elif choix == 4:
-        colone = input("Quelle colone recherché ?\n"
-                       "(nom, prenom, tel ,email, qualité, tous = *)\n")
-        cond = input("Une condition ?")
-        if cond == "non":
-            ligne_cond = ""
-            ligne_cond = ""
-        else:
-            colone_cond = input("Colone de la condition\n"
-                                "(nom, prenom, tel ,email, qualité)\n")
-            ligne_cond = input("A quoi est egale {} ?\n".format(colone_cond))        
-        rechBDD(colone, colone_cond, ligne_cond, cond)
-        
-    elif choix == 5:
 
         cur.execute('SELECT * FROM ANNUAIRE')
         conn.commit()
         BD = cur.fetchall()
+        print(BD)
 
 
         fenetre = Tk()
+        
+        Button(fenetre, text="EXIT", command=Exit).pack(side = TOP, fill = X, pady = 5)
 
         tableau = Treeview(fenetre, columns=('NOM', 'PRENOM', 'TELEPHONE', 'EMAIL', 'QUALITE'))
         tableau.heading('NOM', text='NOM')
@@ -135,18 +201,23 @@ while choix != 6:
         tableau.pack(padx = 5, pady = (0, 5))
         
         for i in range(len(BD)):
-            tableau.insert('', 'end', iid=BD[i][0], values=(BD[i][1], BD[i][2], BD[i][3], BD[i][4], BD[i][5]))
+            tableau.insert('', 'end', iid=i+1, values=(BD[i][1], BD[i][2], BD[i][3], BD[i][4], BD[i][5]))
         
-        bouton=Button(fenetre, text="Fermer", command=quitter)
-        bouton.pack()
+        bouton=Button(fenetre, text="Fermer", command=quitter).pack()
+
+        fenetre.mainloop()
         
-        fenetre.mainloop()                
-    choix = menu() 
-    
+    if choix != 5:          
+        fenetre = Tk()
+
+        Button(fenetre, text="AJOUT", command=choix1).pack(pady = 5)
+        Button(fenetre, text="SUPRESSION", command=choix2).pack(pady = 5)
+        Button(fenetre, text="MODIFICATION", command=choix3).pack(pady = 5)
+        Button(fenetre, text="BDD", command=choix4).pack(pady = 5)
+        Button(fenetre, text="EXIT", command=Exit).pack(pady = 5)
         
-        
-      1
-    
+        fenetre.mainloop() 
+       
 
 cur.close()
 conn.close()
